@@ -1,7 +1,7 @@
 ## Thunderbird build scripts
 
-Portable and duplicable build script for building Thunderbird 78.12.0 on macOS.
-Tested on Mojave in January 2025.
+Portable and duplicable build script for building Thunderbird 115.7.0 on macOS.
+Tested on Ventura in January 2025.
 
 ### Why:
 
@@ -16,10 +16,10 @@ Launch "./Build on macOS [debug|release]". If the parameter is omitted, debug wi
 
 Everything will be downloaded and setup in the chosen folder, including a local installation of brew.
 
-- Local rust is installed in "local_rust"
 - Local brew is installed in "local_brew"
-- MacOS SDK is installed in "MacOSX10.11.sdk"
+- MacOS SDK is installed in "MacOSX14.4.sdk"
 - Thunderbird sources are installed in "thunderbird-{version}"
+- a folder mozbuild is created by the mozilla build system
 
 ### Offline use.
 

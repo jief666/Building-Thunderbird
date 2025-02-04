@@ -16,7 +16,7 @@ function do_it()
         if ! [ -f ./offline/thunderbird-$THUNDERBIRD_VERSION.source.tar.xz ]
         then
             mkdir -p offline
-	    curl -f https://archive.mozilla.org/pub/thunderbird/releases/$THUNDERBIRD_VERSION/source/thunderbird-$THUNDERBIRD_VERSION.source.tar.xz -o ./offline/thunderbird-$THUNDERBIRD_VERSION.source.tar.xz  ||  return 1
+	        curl -f https://archive.mozilla.org/pub/thunderbird/releases/$THUNDERBIRD_VERSION/source/thunderbird-$THUNDERBIRD_VERSION.source.tar.xz -o ./offline/thunderbird-$THUNDERBIRD_VERSION.source.tar.xz  ||  return 1
         fi
         mkdir ./tmp/thunderbird-$THUNDERBIRD_VERSION-origin
         tar xzf ./offline/thunderbird-$THUNDERBIRD_VERSION.source.tar.xz --strip-components 1 -C ./tmp/thunderbird-$THUNDERBIRD_VERSION-origin  ||  return 1
@@ -25,10 +25,13 @@ function do_it()
 
     cd ./tmp/thunderbird-$THUNDERBIRD_VERSION-origin || return 1
     find_dir="."
-    #find_dir="./comm" # finding in comm only is quicker, handy for debugging
+    find_dir="./comm" # finding in comm only is quicker, handy for debugging
     # Don't know why "_psutil_osx.cpython-39-darwin.so" and "_psutil_posix.cpython-39-darwin.so" are different...
+    # find "$find_dir" \
+    #     \( -regex '*.pyc' -o -path "./comm/mail/installer/package-manifest.in" -o -name "_psutil_osx.cpython-39-darwin.so" -o -name "_psutil_posix.cpython-39-darwin.so" -o -path "./js/src/*" -prune \) \
+    #     -o -type f -exec bash -c 'diff -uN "${1}" "../../thunderbird-$THUNDERBIRD_VERSION/$1"' - {} {} \; > "$GENERATE_PATCHES_SCRIPT_DIR"/patches.txt
     find "$find_dir" \
-        \( -regex '*.pyc' -o -path "./comm/mail/installer/package-manifest.in" -o -name "_psutil_osx.cpython-39-darwin.so" -o -name "_psutil_posix.cpython-39-darwin.so" -o -path "./js/src/*" -prune \) \
+        \( -regex '*.pyc' -o -path "./js/src/old-configure" -prune \) \
         -o -type f -exec bash -c 'diff -uN "${1}" "../../thunderbird-$THUNDERBIRD_VERSION/$1"' - {} {} \; > "$GENERATE_PATCHES_SCRIPT_DIR"/patches.txt
 
 }

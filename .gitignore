@@ -1,9 +1,9 @@
 /.project
-/local_brew/
-/local_rustc/
-/offline.zip
+/.DS_Store
 /offline/
-/MacOSX10.11.sdk/
-/thunderbird-60.5.3/
-/thunderbird_profile
-/tmp
+/thunderbird-115.7.0/
+/thunderbird_profile/
+/tmp/
+/MacOSX13.3.sdk/
+/local_brew/
+/mozbuild/

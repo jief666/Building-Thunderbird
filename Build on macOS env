@@ -38,10 +38,10 @@ function do_it()
     export OSX_VERSION_MINOR=$(sw_vers -productVersion | /usr/bin/awk -F. '{print $2}')
     export OSX_VERSION=$(sw_vers -productVersion | /usr/bin/awk -F. '{print $1 "." $2}')
 
-    export THUNDERBIRD_VERSION=78.12.0
-    export RUST_VERSION_FOR_CBINDGEN=1.84.0
-    export RUST_VERSION=1.53.0
-    export CBINDGEN_VERSION=0.19.0
+    export THUNDERBIRD_VERSION=115.7.0
+    export RUST_VERSION=1.75.0
+    export CBINDGEN_VERSION=0.26.0
+    export MACOS_SDK_VERSION=13.3
     export OFFLINE_DIR="$SCRIPT_DIR/offline"
 
     export HOMEBREW_PREFIX="$SCRIPT_DIR/local_brew"
@@ -50,21 +50,23 @@ function do_it()
     export HOMEBREW_LOGS="$HOMEBREW_PREFIX"/Logs
     export HOMEBREW_NO_AUTO_UPDATE=1
     export HOMEBREW_NO_INSTALL_CLEANUP=1
+    export HOMEBREW_NO_INSTALL_FROM_API=1
     export HOMEBREW_REPOSITORY="${HOMEBREW_PREFIX}/Homebrew"
     export HOMEBREW_CORE="${HOMEBREW_REPOSITORY}/Library/Taps/homebrew/homebrew-core"
     export HOMEBREW_CASK="${HOMEBREW_REPOSITORY}/Library/Taps/homebrew/homebrew-cask"
     export HOMEBREW_BREW_GIT_REMOTE="https://github.com/Homebrew/brew"
-    export HOMEBREW_BREW_GIT_SHA=ac9bdd030ae69d1af0ab98d3801ea04d21b73189 #2021-07-19
+    export HOMEBREW_BREW_GIT_SHA=54adebb1def69b7e4d8f37d74cfded2825bfb081
+    export HOMEBREW_BACKUP_BASENAME=local_brew_2024-02-13
     export HOMEBREW_CORE_GIT_REMOTE="https://github.com/Homebrew/homebrew-core"
-    export HOMEBREW_CORE_GIT_SHA=8c3425afc2abb4b1d35883ef72c9b2cdd1bc3ceb #2021-07-20
-    export HOMEBREW_BACKUP_BASENAME=local_brew_2021-07-19
+    export HOMEBREW_CORE_GIT_SHA=d3f50c708edd6ba9352c57500d1341df4e8a6b41
     # if bootles are used, homebrew cache folder contains macos specific bottles
     # In that case, you might consider using $OSX_VERSION in HOMEBREW_CACHE_BACKUP_BASENAME zip
-    export HOMEBREW_CACHE_BACKUP_BASENAME=local_brew_cache_2021-07-20
+    export HOMEBREW_CACHE_BACKUP_BASENAME=local_brew_cache_2024-02-13
 
     export MOZCONFIG="$SCRIPT_DIR"/thunderbird-$THUNDERBIRD_VERSION/mozconfig-$CONF
+    export MOZBUILD_STATE_PATH="$SCRIPT_DIR"/mozbuild
 
-    export RUSTUP_HOME="$SCRIPT_DIR"/local_rust
+    export RUSTUP_HOME="$HOMEBREW_PREFIX" # rust is installed by brew
     export CARGO_HOME="$RUSTUP_HOME"
 
     # Because it's compiled with --target=x86_64-apple-darwin, like the release version, the build system thinks it's a cross compiler.
@@ -84,8 +86,13 @@ function do_it()
     export INSTALL_NAME_TOOL=install_name_tool
     export OBJCOPY=objcopy
 
+    #export SCCACHE_DIR="$SCRIPT_DIR/build/sccache"
+    #export SCCACHE_CACHE_SIZE="30G"
+    #mkdir -p "$SCCACHE_DIR"
+
     pathprepend "$HOMEBREW_PREFIX"/bin
     pathprepend "$RUSTUP_HOME"/bin
+    pathprepend "$HOMEBREW_CELLAR/llvm/16.0.3/bin"
 }
 
 do_it "$@"

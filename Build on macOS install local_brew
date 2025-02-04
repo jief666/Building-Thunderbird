@@ -3,7 +3,11 @@ SCRIPT_ABS_FILENAME=`perl -e 'use Cwd "abs_path";print abs_path(shift)' "${BASH_
 SCRIPT_DIR=`dirname "$SCRIPT_ABS_FILENAME"`
 #to copy/paste cmds in terminal (for debug purpose?), do this before : SCRIPT_DIR=$(pwd)
 
-set -x
+#set -x
+
+#HOMEBREW_BREW_GIT_SHA="master"
+#HOMEBREW_CORE_GIT_SHA="master"
+#HOMEBREW_CASK_GIT_SHA="master"
 
 function do_it()
 {
@@ -16,8 +20,7 @@ function do_it()
     then
         if [ -f "$OFFLINE_DIR"/$HOMEBREW_BACKUP_BASENAME.zip ]
         then
-            echo unzipping Homebrew \(unzip -qd "$SCRIPT_DIR" "$OFFLINE_DIR"/$HOMEBREW_BACKUP_BASENAME.zip\)
-            unzip -qd "$SCRIPT_DIR" "$OFFLINE_DIR"/$HOMEBREW_BACKUP_BASENAME.zip  ||  return 1
+            unzip -d "$SCRIPT_DIR" "$OFFLINE_DIR"/$HOMEBREW_BACKUP_BASENAME.zip  ||  return 1
         else
         (
 
@@ -27,7 +30,7 @@ function do_it()
             directories=(bin etc include lib sbin share var opt
                          share/zsh share/zsh/site-functions
                          var/homebrew var/homebrew/linked
-                         Cellar Caskroom Frameworks)
+                         Cellar)
             mkdirs=()
             for dir in "${directories[@]}"; do
               if ! [[ -d "${HOMEBREW_PREFIX}/${dir}" ]]; then
@@ -70,46 +73,13 @@ function do_it()
                 "git" "config" "core.autocrlf" "false" || return 1
                 "git" "fetch" "--depth=1" "origin" "$HOMEBREW_CORE_GIT_SHA" || return 1
                 "git" "checkout" "$HOMEBREW_CORE_GIT_SHA" || return 1
-                # commit 63b7c799dbce94feb1cb9eec466700d2e0e9f285 is just before folly use llvm. But this commit failed downloading "https://ghcr.io/v2/homebrew/core/node/manifests/15.12.0"
-                #"git" "fetch" "--depth=1" "origin" "63b7c799dbce94feb1cb9eec466700d2e0e9f285" || return 1
-                #"git" "checkout" "63b7c799dbce94feb1cb9eec466700d2e0e9f285" || return 1
                 git remote remove origin || return 1
                 # easy access to core formulae. Just for debug, not needed at all
-                ln -s "$HOMEBREW_CORE"/Formula/ "$HOMEBREW_PREFIX"/formulae-core
-                # doc doesn't build for git
-                sed -i "" 's| (share/"doc/git-doc").install resource("html")|#(share/"doc/git-doc").install resource("html")|' "$HOMEBREW_CORE"/Formula/git.rb || return 1
+                ln -s ./Homebrew/Library/Taps/homebrew/homebrew-core/Formula/ "$HOMEBREW_PREFIX"/formulae-core
                 # disable test to save some time, but works if you make them
                 sed -i "" 's/ system "make", "test"/#system "make", "test"/' "$HOMEBREW_CORE"/Formula/openssl@1.1.rb || return 1
-                #curl
-                sed -i.bak 's|args = \["--location", "--remote-time", "--output", destination, \*args\]|args = ["--cacert", "#{HOMEBREW_PREFIX}/etc/ca-certificates/cert.pem", "--location", "--remote-time", "--output", destination, *args]|' "$HOMEBREW_PREFIX"/Homebrew/Library/Homebrew/utils/curl.rb || return 1
-                #ares
-                sed -i.bak 's|url "https://c-ares.haxx.se/download/c-ares-1.17.1.tar.gz"|url "https://github.com/c-ares/c-ares/releases/download/cares-1_17_1/c-ares-1.17.1.tar.gz"|' "$HOMEBREW_PREFIX"/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/c-ares.rb || return 1
-                #had this problem where zlib from macos wasn't found. Seems not happening anymore... I keep this, just in case.
-                #sed -i.bak 's|uses_from_macos "zlib"|depends_on "zlib"|' "$HOMEBREW_PREFIX"/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/nghttp2.rb
-                if [ $OSX_VERSION_MAJOR -ge 13 ]
-                then
-                    if ! grep "MACOSX_DEPLOYMENT_TARGET = 10.13" "$HOMEBREW_PREFIX"/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/terminal-notifier.rb
-                    then
-                        sed -i "" '23i\
-    system "sed", "-i", "", "s|MACOSX_DEPLOYMENT_TARGET = 10.10|MACOSX_DEPLOYMENT_TARGET = 10.13|g", "Terminal Notifier.xcodeproj/project.pbxproj"\
-' "$HOMEBREW_PREFIX"/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/terminal-notifier.rb || return 1
-                    fi
-                fi
-
-                #chage pcre2 url
-                sed -i "" 's|url "https://ftp.pcre.org/pub/pcre/pcre2-10.37.tar.bz2"|url "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.37/pcre2-10.37.tar.bz2"|' "$HOMEBREW_CORE"/Formula/pcre2.rb || return 1
-
-                #disable sphinx-doc because it doesn't build offline
-                sed -i "" 's| \(depends_on "sphinx-doc"\)| #\1|' "$HOMEBREW_CORE"/Formula/libuv.rb || return 1
-                sed -i "" 's| \(system "make", "man"\)| #\1|' "$HOMEBREW_CORE"/Formula/libuv.rb || return 1
-                sed -i "" 's| \(system "make", "singlehtml"\)| #\1|' "$HOMEBREW_CORE"/Formula/libuv.rb || return 1
-                sed -i "" 's| \(man1.install "build/man/libuv.1"\)| #\1|' "$HOMEBREW_CORE"/Formula/libuv.rb || return 1
-                sed -i "" 's| \(doc.install Dir\["build/singlehtml/\*"\]\)| #\1|' "$HOMEBREW_CORE"/Formula/libuv.rb || return 1
-
-                sed -i "" 's| \(depends_on "sphinx-doc"\)| #\1|' "$HOMEBREW_CORE"/Formula/cmake.rb || return 1
-                sed -i "" 's|--sphinx-build=#{Formula\["sphinx-doc"\].opt_bin}/sphinx-build||' "$HOMEBREW_CORE"/Formula/cmake.rb || return 1
-                sed -i "" 's|--sphinx-html||' "$HOMEBREW_CORE"/Formula/cmake.rb || return 1
-                sed -i "" 's|--sphinx-man||' "$HOMEBREW_CORE"/Formula/cmake.rb || return 1
+                sed -i "" 's/ system "make", "test"/#system "make", "test"/' "$HOMEBREW_CORE"/Formula/openssl@3.0.rb || return 1
+                sed -i "" 's/ system "make", "test"/#system "make", "test"/' "$HOMEBREW_CORE"/Formula/openssl@3.rb || return 1
 
             ) || return 1
             fi
@@ -125,8 +95,7 @@ function do_it()
     then
         if [ -f "$OFFLINE_DIR"/$HOMEBREW_CACHE_BACKUP_BASENAME.zip ]
         then
-            echo unzipping Homebrew cache \(unzip -qd "$(dirname "$HOMEBREW_CACHE")" "$OFFLINE_DIR"/$HOMEBREW_CACHE_BACKUP_BASENAME.zip\)
-            unzip -qd "$(dirname "$HOMEBREW_CACHE")" "$OFFLINE_DIR"/$HOMEBREW_CACHE_BACKUP_BASENAME.zip  ||  return 1
+            unzip -d "$(dirname "$HOMEBREW_CACHE")" "$OFFLINE_DIR"/$HOMEBREW_CACHE_BACKUP_BASENAME.zip  ||  return 1
         fi
     fi
 

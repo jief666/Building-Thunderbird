@@ -4,4 +4,24 @@ SCRIPT_DIR=`dirname "$SCRIPT_ABS_FILENAME"`
 
 cd "$SCRIPT_DIR"
 
-./thunderbird-60.5.3/obj-thunderbird-debug/dist/Thunderbird*.app/Contents/MacOS/thunderbird -profile ./thunderbird_profile
+. ./"Build On MacOS env" # CAREFUL : this defines SCRIPT_DIR. Works because "Build On MacOS env" and "Run with local profile" are in the same folder 
+
+if ! [ -z $1 ]
+then
+    if [ "$1" = "debug" ]
+    then
+        CONF=debug
+    else
+        if [ "$1" = "release" ]
+        then
+            CONF=release
+        else
+            echo Usage : '"Build on macOS" [debug|release]'
+            return 1
+        fi
+    fi
+else
+    CONF=debug
+fi
+
+./thunderbird-"$THUNDERBIRD_VERSION"/obj-thunderbird-"$CONF"/dist/Thunderbird*.app/Contents/MacOS/thunderbird -profile ./thunderbird_profile
