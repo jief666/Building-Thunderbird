@@ -77,9 +77,9 @@ function do_it()
                 # easy access to core formulae. Just for debug, not needed at all
                 ln -s ./Homebrew/Library/Taps/homebrew/homebrew-core/Formula/ "$HOMEBREW_PREFIX"/formulae-core
                 # disable test to save some time, but works if you make them
-                sed -i "" 's/ system "make", "test"/#system "make", "test"/' "$HOMEBREW_CORE"/Formula/openssl@1.1.rb || return 1
-                sed -i "" 's/ system "make", "test"/#system "make", "test"/' "$HOMEBREW_CORE"/Formula/openssl@3.0.rb || return 1
-                sed -i "" 's/ system "make", "test"/#system "make", "test"/' "$HOMEBREW_CORE"/Formula/openssl@3.rb || return 1
+                sed -i "" 's/ system "make", "test"/#system "make", "test"/' "$HOMEBREW_CORE"/Formula/o/openssl@1.1.rb || return 1
+                sed -i "" 's/ system "make", "test"/#system "make", "test"/' "$HOMEBREW_CORE"/Formula/o/openssl@3.0.rb || return 1
+                sed -i "" 's/ system "make", "test"/#system "make", "test"/' "$HOMEBREW_CORE"/Formula/o/openssl@3.rb || return 1
 
             ) || return 1
             fi

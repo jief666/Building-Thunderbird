@@ -127,7 +127,6 @@ function do_it()
 
     [ $(ls -1q "$HOMEBREW_CACHE"/node* | wc -l) -ge 1 ] || brew_fetch node  ||  return 1
     [ $(ls -1q "$HOMEBREW_CACHE"/nasm* | wc -l) -ge 1 ] || brew_fetch nasm  ||  return 1
-    [ $(ls -1q "$HOMEBREW_CACHE"/llvm* | wc -l) -ge 1 ] || brew_fetch llvm  ||  return 1
 
     if ! [ -f "$OFFLINE_DIR"/$HOMEBREW_CACHE_BACKUP_BASENAME.zip ]
     then
@@ -154,10 +153,6 @@ function do_it()
     
     if ! [ -d "$HOMEBREW_PREFIX"/Cellar/nasm ]; then
         brew_install nasm  ||  return 1
-    fi
-
-    if ! [ -d "$HOMEBREW_PREFIX"/Cellar/llvm ]; then
-        brew_install llvm  ||  return 1
     fi
 
     # A popup might appear : "To use the 'java' command-line tool you need to install a JDK" will appear. Don't know why. No need for java, works fine without. 2021-07 : not anymore. 2024-02 : it's back, it happens again.
@@ -207,6 +202,7 @@ function do_it()
 
         # toolchain.configure cannot find the linker kind because toolchain.configure:1782 is expecting "Logging ld64 options" to be displayed in stderr. Not working in Ventura so I'm forcing it.
         sed -i.bak 's|if retcode == 1 and "Logging ld64 options" in stderr:|return namespace(KIND="ld64", LINKER_FLAG=linker_flag,)\n            if retcode == 1  and  "Logging ld64 options" in stderr:|' ./thunderbird-$THUNDERBIRD_VERSION/build/moz.configure/toolchain.configure
+        sed -i.bak 's|\[types arrayByAddingObject:AVCaptureDeviceTypeExternal\]|[types arrayByAddingObject:AVCaptureDeviceTypeExternalUnknown]|' ./thunderbird-$THUNDERBIRD_VERSION/third_party/libwebrtc/sdk/objc/components/capturer/RTCCameraVideoCapturer.m # needed when you build on macOS previous to sonoma with sonoma SDK
 
         if [ -x ./dev/apply_patches ]
         then
@@ -239,7 +235,7 @@ function do_it()
     mozconfig_var="$mozconfig_var"'ac_add_options --enable-rust-simd'$'\n'
     mozconfig_var="$mozconfig_var"'ac_add_options --disable-updater'$'\n'
     mozconfig_var="$mozconfig_var"'ac_add_options --target=x86_64-apple-darwin'$'\n'
-    mozconfig_var="$mozconfig_var"'ac_add_options --disable-crashreporter'$'\n' # Cannot run in Xcode if crashreporter is enabled.
+        mozconfig_var="$mozconfig_var"'ac_add_options --disable-crashreporter'$'\n' # Cannot run in Xcode if crashreporter is enabled.
     mozconfig_var="$mozconfig_var"'ac_add_options --disable-tests'$'\n'
     mozconfig_var="$mozconfig_var"'ac_add_options --disable-sandbox'$'\n'
     mozconfig_var="$mozconfig_var""ac_add_options --with-macos-sdk="$SCRIPT_DIR"/MacOSX"$MACOS_SDK_VERSION".sdk"$'\n'

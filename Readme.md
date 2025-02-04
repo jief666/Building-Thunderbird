@@ -1,6 +1,6 @@
 ## Thunderbird build scripts
 
-Portable and duplicable build script for building Thunderbird 115.7.0 on macOS.
+Portable and duplicable build script for building Thunderbird 128.6.0esr on macOS.
 Tested on Ventura in January 2025.
 
 ### Why:

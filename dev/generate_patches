@@ -7,7 +7,7 @@ function do_it()
 {
 
     . ./"Build on macOS env" # CAREFUL : this will define SCRIPT_DIR.
-    cd "$SCRIPT_DIR"/.. # that way, we're in the same cwd as "Build On MacOS..." scripts
+    cd "$SCRIPT_DIR" # that way, we're in the same cwd as "Build On MacOS..." scripts
 
     mkdir -p ./tmp
 
@@ -25,13 +25,13 @@ function do_it()
 
     cd ./tmp/thunderbird-$THUNDERBIRD_VERSION-origin || return 1
     find_dir="."
-    find_dir="./comm" # finding in comm only is quicker, handy for debugging
+    #find_dir="./comm" # finding in comm only is quicker, handy for debugging
     # Don't know why "_psutil_osx.cpython-39-darwin.so" and "_psutil_posix.cpython-39-darwin.so" are different...
     # find "$find_dir" \
     #     \( -regex '*.pyc' -o -path "./comm/mail/installer/package-manifest.in" -o -name "_psutil_osx.cpython-39-darwin.so" -o -name "_psutil_posix.cpython-39-darwin.so" -o -path "./js/src/*" -prune \) \
     #     -o -type f -exec bash -c 'diff -uN "${1}" "../../thunderbird-$THUNDERBIRD_VERSION/$1"' - {} {} \; > "$GENERATE_PATCHES_SCRIPT_DIR"/patches.txt
     find "$find_dir" \
-        \( -regex '*.pyc' -o -path "./js/src/old-configure" -prune \) \
+        \( -regex '*.pyc' -o -path "./js/src/old-configure" -o -path "./build/moz.configure/toolchain.configure" -o -path "./third_party/libwebrtc/sdk/objc/components/capturer/RTCCameraVideoCapturer.m" -prune \) \
         -o -type f -exec bash -c 'diff -uN "${1}" "../../thunderbird-$THUNDERBIRD_VERSION/$1"' - {} {} \; > "$GENERATE_PATCHES_SCRIPT_DIR"/patches.txt
 
 }

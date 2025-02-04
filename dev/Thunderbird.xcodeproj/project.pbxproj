@@ -63,7 +63,7 @@
 			path = dist;
 			sourceTree = "<group>";
 		};
-		9A52000E2B7CDF2C00604284 /* Thunderbird-115.7.0 */ = {
+		9A52000E2B7CDF2C00604284 /* Thunderbird-128.6.0esr */ = {
 			isa = PBXGroup;
 			children = (
 				9A500D0626A9DA7D006F448D /* nsMsgCompose */,
@@ -72,14 +72,14 @@
 				9AFC1FA42B7CE06900D02EDD /* xpcom */,
 				9A506C0726A99BC0006F448D /* obj-thunderbird-debug */,
 			);
-			name = "Thunderbird-115.7.0";
-			path = "../thunderbird-115.7.0";
+			name = "Thunderbird-128.6.0esr";
+			path = "../thunderbird-128.6.0esr";
 			sourceTree = "<group>";
 		};
 		9AEB1F372252092100D0D7EC = {
 			isa = PBXGroup;
 			children = (
-				9A52000E2B7CDF2C00604284 /* Thunderbird-115.7.0 */,
+				9A52000E2B7CDF2C00604284 /* Thunderbird-128.6.0esr */,
 				9A500D0526A9DA7D006F448D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -313,12 +313,12 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$PROJECT_DIR/../thunderbird-115.7.0/obj-thunderbird-debug/dist/include",
-					"$PROJECT_DIR/../thunderbird-115.7.0/nsprpub/pr/include",
-					"$PROJECT_DIR/../thunderbird-115.7.0/config/external/nspr",
-					"$PROJECT_DIR/../thunderbird-115.7.0/nsprpub/lib/libc/include",
-					"$PROJECT_DIR/../thunderbird-115.7.0/dom/base",
-					"$PROJECT_DIR/../thunderbird-115.7.0/xpcom/base",
+					"$PROJECT_DIR/../thunderbird-128.6.0esr/obj-thunderbird-debug/dist/include",
+					"$PROJECT_DIR/../thunderbird-128.6.0esr/nsprpub/pr/include",
+					"$PROJECT_DIR/../thunderbird-128.6.0esr/config/external/nspr",
+					"$PROJECT_DIR/../thunderbird-128.6.0esr/nsprpub/lib/libc/include",
+					"$PROJECT_DIR/../thunderbird-128.6.0esr/dom/base",
+					"$PROJECT_DIR/../thunderbird-128.6.0esr/xpcom/base",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				ONLY_ACTIVE_ARCH = YES;
@@ -389,12 +389,12 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$PROJECT_DIR/../thunderbird-115.7.0/obj-thunderbird-debug/dist/include",
-					"$PROJECT_DIR/../thunderbird-115.7.0/nsprpub/pr/include",
-					"$PROJECT_DIR/../thunderbird-115.7.0/config/external/nspr",
-					"$PROJECT_DIR/../thunderbird-115.7.0/nsprpub/lib/libc/include",
-					"$PROJECT_DIR/../thunderbird-115.7.0/dom/base",
-					"$PROJECT_DIR/../thunderbird-115.7.0/xpcom/base",
+					"$PROJECT_DIR/../thunderbird-128.6.0esr/obj-thunderbird-debug/dist/include",
+					"$PROJECT_DIR/../thunderbird-128.6.0esr/nsprpub/pr/include",
+					"$PROJECT_DIR/../thunderbird-128.6.0esr/config/external/nspr",
+					"$PROJECT_DIR/../thunderbird-128.6.0esr/nsprpub/lib/libc/include",
+					"$PROJECT_DIR/../thunderbird-128.6.0esr/dom/base",
+					"$PROJECT_DIR/../thunderbird-128.6.0esr/xpcom/base",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				ONLY_ACTIVE_ARCH = YES;
