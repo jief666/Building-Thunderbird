@@ -6,9 +6,9 @@ APPLY_PATCHES_SCRIPT_DIR=`dirname "$APPLY_PATCHES_SCRIPT_ABS_FILENAME"`
 function do_it()
 {
 
-    cd "$APPLY_PATCHES_SCRIPT_DIR"/.. # that way, we're in the same cwd as "Build On MacOS..." scripts
 
-    . ./"Build on macOS env"
+    . ./"Build on macOS env" # CAREFUL : this will define SCRIPT_DIR.
+    cd "$SCRIPT_DIR"/.. # that way, we're in the same cwd as "Build On MacOS..." scripts
 
     if ! [ -f "$APPLY_PATCHES_SCRIPT_DIR"/patches.txt ]
     then

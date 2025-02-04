@@ -1,0 +1,374 @@
+Options: [defaults in brackets after descriptions]
+  Help options:
+    --help                    print this message
+
+  Options from ../build/moz.configure/bindgen.configure:
+    --with-clang-path         Absolute path to a Clang binary for bindgen (version 3.9.x or above)
+    --with-libclang-path      Absolute path to a directory containing Clang/LLVM libraries for bindgen (version 3.9.x or above)
+
+  Options from ../build/moz.configure/flags.configure:
+    --disable-new-pass-manager
+                              Use the legacy LLVM pass manager in clang builds
+
+  Options from ../build/moz.configure/headers.configure:
+    --with-linux-headers      location where the Linux kernel headers can be found
+
+  Options from ../build/moz.configure/init.configure:
+    --enable-application      Application to build. Same as --enable-project.
+    --enable-project          Project to build [browser]
+    --enable-update-channel   Select application update channel [default]
+    --host                    Define the system type performing the build
+    --target                  Define the system type where the resulting executables will be used
+    --with-external-source-dir
+                              External directory containing additional build files
+    --with-version-file-path  Specify a custom path to app version files instead of auto-detecting
+
+  Options from ../build/moz.configure/lto-pgo.configure:
+    --enable-lto={full,thin,cross}
+                              Enable LTO
+    --enable-profile-generate={cross}
+                              Build a PGO instrumented binary
+    --enable-profile-use={cross}
+                              Use a generated profile during the build
+    --with-pgo-jarlog         Use the provided jarlog file when packaging during a profile-use build
+    --with-pgo-profile-path   Path to the directory with unmerged profile data to use during the build
+
+  Options from ../build/moz.configure/memory.configure:
+    --enable-jemalloc         Replace memory allocator with jemalloc
+
+  Options from ../build/moz.configure/node.configure:
+    --disable-nodejs          Require Node.js to build
+
+  Options from ../build/moz.configure/nspr.configure:
+    --with-system-nspr        Use system NSPR
+
+  Options from ../build/moz.configure/old.configure:
+    --cache-file              Help missing for old configure options
+    --datadir                 Help missing for old configure options
+    --enable-crashreporter    Help missing for old configure options
+    --enable-dbus             Help missing for old configure options
+    --enable-debug-js-modules
+                              Help missing for old configure options
+    --enable-dump-painting    Help missing for old configure options
+    --enable-extensions       Help missing for old configure options
+    --enable-libproxy         Help missing for old configure options
+    --enable-logrefcnt        Help missing for old configure options
+    --enable-mobile-optimize  Help missing for old configure options
+    --enable-necko-wifi       Help missing for old configure options
+    --enable-negotiateauth    Help missing for old configure options
+    --enable-official-branding
+                              Help missing for old configure options
+    --enable-parental-controls
+                              Help missing for old configure options
+    --enable-pref-extensions  Help missing for old configure options
+    --enable-sandbox          Help missing for old configure options
+    --enable-startupcache     Help missing for old configure options
+    --enable-system-cairo     Help missing for old configure options
+    --enable-system-extension-dirs
+                              Help missing for old configure options
+    --enable-system-pixman    Help missing for old configure options
+    --enable-universalchardet
+                              Help missing for old configure options
+    --enable-updater          Help missing for old configure options
+    --enable-xul              Help missing for old configure options
+    --enable-zipwriter        Help missing for old configure options
+    --includedir              Help missing for old configure options
+    --libdir                  Help missing for old configure options
+    --prefix                  Help missing for old configure options
+    --with-android-distribution-directory
+                              Help missing for old configure options
+    --with-android-max-sdk    Help missing for old configure options
+    --with-android-min-sdk    Help missing for old configure options
+    --with-app-basename       Help missing for old configure options
+    --with-app-name           Help missing for old configure options
+    --with-branding           Help missing for old configure options
+    --with-distribution-id    Help missing for old configure options
+    --with-macbundlename-prefix
+                              Help missing for old configure options
+    --with-system-libevent    Help missing for old configure options
+    --with-system-png         Help missing for old configure options
+    --with-user-appdir        Help missing for old configure options
+    --x-includes              Help missing for old configure options
+    --x-libraries             Help missing for old configure options
+
+  Options from ../build/moz.configure/rust.configure:
+    --enable-rust-tests       Enable building and running of Rust tests during `make check`
+
+  Options from ../build/moz.configure/toolchain.configure:
+    --disable-cargo-incremental
+                              Disable incremental rust compilation.
+    --disable-debug-symbols   Disable debug symbols using the given compiler flags
+    --disable-frame-pointers  Disable frame pointers
+    --disable-optimize        Disable optimizations via compiler flags
+    --disable-release         Do not build with more conservative, release engineering-oriented options.
+    --enable-address-sanitizer
+                              Enable Address Sanitizer
+    --enable-clang-plugin     Enable building with the Clang plugin (gecko specific static analyzers)
+    --enable-clang-plugin-alpha
+                              Enable static analysis with clang-plugin alpha checks.
+    --enable-coverage         Enable code coverage
+    --enable-cpp-rtti         Enable C++ RTTI
+    --enable-fuzzing          Enable fuzzing support
+    --enable-gold             Enable GNU Gold Linker when it is not already the default
+    --enable-hardening        Enables security hardening compiler options
+    --enable-linker           Select the linker {bfd, gold, ld64, lld, lld-*}
+    --enable-memory-sanitizer
+                              Enable Memory Sanitizer
+    --enable-mozsearch-plugin
+                              Enable building with the mozsearch indexer plugin
+    --enable-signed-overflow-sanitizer
+                              Enable UndefinedBehavior Sanitizer (Signed Integer Overflow Parts)
+    --enable-stdcxx-compat    Enable compatibility with older libstdc++
+    --enable-thread-sanitizer
+                              Enable Thread Sanitizer
+    --enable-undefined-sanitizer
+                              Enable UndefinedBehavior Sanitizer
+    --enable-unsigned-overflow-sanitizer
+                              Enable UndefinedBehavior Sanitizer (Unsigned Integer Overflow Parts)
+    --with-ccache             Enable compiling with ccache
+    --with-compiler-wrapper   Enable compiling with wrappers such as distcc and ccache
+    --with-toolchain-prefix   Prefix for the target toolchain
+
+  Options from ../build/moz.configure/warnings.configure:
+    --enable-warnings-as-errors
+                              Enable treating warnings as errors
+
+  Options from ../js/ffi.configure:
+    --with-system-ffi         Use system libffi (located with pkgconfig)
+
+  Options from ../js/moz.configure:
+    --disable-ctypes          Disable js-ctypes
+    --disable-new-regexp      Disable new regexp engine
+    --disable-shared-memory   Disable JS/WebAssembly shared memory and atomics
+    --disable-wasm-multi-value
+                              Disable WebAssembly multi-value blocks and function calls
+    --enable-binast           Enable BinAST support
+    --enable-callgrind        Enable callgrind profiling
+    --enable-cranelift        Enable Cranelift code generator for wasm
+    --enable-gc-probes        Turn on probes for allocation and finalization
+    --enable-gczeal           Enable zealous GCing
+    --enable-instruments      Enable instruments remote profiling
+    --enable-ion              Deprecated
+    --enable-jit              Enable use of the JITs
+    --enable-jitspew          Enable the Jit spew and IONFLAGS environment variable
+    --enable-js-shell         Build the JS shell
+    --enable-masm-verbose     Enable MacroAssembler verbosity of generated code.
+    --enable-more-deterministic
+                              Enable changes that make the shell more deterministic
+    --enable-oom-breakpoint   Enable a breakpoint function for artificial OOMs
+    --enable-perf             Enable Linux perf integration
+    --enable-pipeline-operator
+                              Enable pipeline operator
+    --enable-profiling        Set compile flags necessary for using sampling profilers (e.g. shark, perf)
+    --enable-readline         Link js shell to system readline library
+    --enable-rust-simd        Enable explicit SIMD in Rust code.
+    --enable-simulator={arm,arm64,mips32,mips64}
+                              Enable a JIT code simulator for the specified architecture
+    --enable-small-chunk-size
+                              Allocate memory for JS GC things in smaller chunks
+    --enable-smoosh           Enable SmooshMonkey (new JS engine frontend)
+    --enable-trace-logging    Enable trace logging
+    --enable-typed-objects    Enable typed objects
+    --enable-vtune            Enable VTune profiling
+    --enable-wasm-bulk-memory
+                              Enable WebAssembly bulk memory operators
+    --enable-wasm-codegen-debug
+                              Enable debugging for wasm codegen
+    --enable-wasm-gc          Enable WebAssembly GC
+    --enable-wasm-private-reftypes
+                              Enable WebAssembly private reference types
+    --enable-wasm-reftypes    Enable WebAssembly reference types
+    --enable-wasm-simd        Enable WebAssembly SIMD
+    --with-cross-lib          Use dir as the location for arm libraries [/usr/unknown-unknown-unknown]
+    --with-jitreport-granularity={0,1,2,3}
+                              Default granularity at which to report JIT code to external tools (0 - no info, 1 - code ranges for while functions only, 2 - per-line information, 3 - per-op information) [3]
+    --with-qemu-exe           Use path as an arm emulator on host platforms
+    --with-sixgill            Enable static checking of code using sixgill
+    --with-system-icu         Use system ICU
+    --without-intl-api        Disable ECMAScript Internationalization API
+
+  Options from ../moz.configure:
+    --build-backends={ChromeMap,CompileDB,CppEclipse,FasterMake,FasterMake+RecursiveMake,GnConfigGen,GnMozbuildWriter,RecursiveMake,TestManifest,VisualStudio}
+                              Build backends to generate [RecursiveMake,FasterMake]
+    --disable-compile-environment
+                              Disable compiler/library checks
+    --disable-gtest-in-build  Force disable building the gtest libxul during the build.
+    --disable-icf             Disable Identical Code Folding
+    --disable-install-strip   Enable stripping of libs & executables when packaging
+    --disable-tests           Do not build test libraries & programs
+    --enable-artifact-build-symbols={full}
+                              Download symbols when artifact builds are enabled.
+    --enable-artifact-builds  Download and use prebuilt binary artifacts.
+    --enable-build-backend={ChromeMap,CompileDB,CppEclipse,FasterMake,FasterMake+RecursiveMake,GnConfigGen,GnMozbuildWriter,RecursiveMake,TestManifest,VisualStudio}
+                              Deprecated
+    --enable-debug            Enable building with developer debug info (using the given compiler flags).
+    --enable-dtrace           Build with dtrace support
+    --enable-rust-debug       Build Rust code with debug assertions turned on.
+    --enable-strip            Enable stripping of libs & executables
+    --enable-ui-locale        Select the user interface locale (default: en-US) [en-US]
+    --enable-valgrind         Enable Valgrind integration hooks
+    --with-debug-label        Debug DEBUG_<value> for each comma-separated value given
+    --with-system-zlib        Use system libz
+
+  Options from ../toolkit/moz.configure:
+    --allow-addon-sideload    Addon sideloading is allowed
+    --disable-accessibility   Disable accessibility support
+    --disable-av1             Disable av1 video support
+    --disable-ffmpeg          Disable FFmpeg for fragmented H264/AAC decoding
+    --disable-fmp4            Disable support for in built Fragmented MP4 parsing
+    --disable-marionette      Disable Marionette remote protocol
+    --disable-new-cert-storage
+                              Disable new certificate storage
+    --disable-printing        Disable printing support
+    --disable-pulseaudio      Disable PulseAudio audio backend.
+    --disable-skia            Disable use of Skia
+    --disable-synth-speechd   Disable speech-dispatcher support
+    --disable-verify-mar      Disable verifying MAR signatures
+    --disable-webspeech       Disable support for HTML Speech API
+    --disable-webspeechtestbackend
+                              Disable support for HTML Speech API Test Backend
+    --disable-wmf             Disable support for Windows Media Foundation
+    --enable-address-sanitizer-reporter
+                              Enable Address Sanitizer Reporter Extension
+    --enable-alsa             Enable ALSA audio backend.
+    --enable-app-system-headers
+                              Use additional system headers defined in $MOZ_BUILD_APP/app-system-headers.mozbuild
+    --enable-bundled-fonts    Enable support for bundled fonts on desktop platforms
+    --enable-cdp              Enable remote agent
+    --enable-chrome-format={omni,jar,flat}
+                              Select FORMAT of chrome files during packaging. [omni]
+    --enable-default-browser-agent
+                              Enable building the default browser agent
+    --enable-default-toolkit={cairo-gtk3,cairo-gtk3-wayland}
+                              Select default toolkit [cairo-gtk3]
+    --enable-dmd              Enable Dark Matter Detector (heap profiler). Also enables jemalloc, replace-malloc and profiling
+    --enable-forkserver       Enable fork server
+    --enable-geckodriver      Build geckodriver
+    --enable-gpsd             Enable gpsd support
+    --enable-ipdl-tests       Enable expensive IPDL tests
+    --enable-jack             Enable JACK audio backend.
+    --enable-jprof            Enable jprof profiling tool (needs mozilla/tools/jprof)
+    --enable-launcher-process
+                              Enable launcher process by default
+    --enable-layout-debugger  Enable layout debugger
+    --enable-openmax          Enable OpenMAX IL for video/audio decoding
+    --enable-proxy-bypass-protection
+                              Prevent suspected or confirmed proxy bypasses
+    --enable-raw              Enable support for RAW media
+    --enable-reflow-perf      Enable reflow performance tracing
+    --enable-skia-pdf         Enable Skia PDF
+    --enable-skia-pdf-sfntly  Enable SFNTLY font subsetting in Skia PDF
+    --enable-tasktracer       Enable TaskTracer
+    --enable-webrender-debugger
+                              Build the websocket debug server in WebRender
+    --enable-webrtc           Enable support for WebRTC
+    --with-adjust-sdk-keyfile
+                              Use the secret key contained in the given keyfile for Adjust SDK requests
+    --with-bing-api-keyfile   Use the client id and secret key contained in the given keyfile for Bing API requests
+    --with-gl-provider        Set GL provider backend type
+    --with-google-location-service-api-keyfile
+                              Use the secret key contained in the given keyfile for Google Location Service API requests
+    --with-google-safebrowsing-api-keyfile
+                              Use the secret key contained in the given keyfile for Google Safebrowsing API requests
+    --with-l10n-base          Path to l10n repositories
+    --with-leanplum-sdk-keyfile
+                              Use the client id and secret key contained in the given keyfile for Leanplum SDK requests
+    --with-mozilla-api-keyfile
+                              Use the secret key contained in the given keyfile for Mozilla API requests
+    --with-pocket-api-keyfile
+                              Use the secret key contained in the given keyfile for Pocket API requests
+    --with-system-jpeg        Use system libjpeg (installed at given prefix)
+    --with-system-libvpx      Use system libvpx (located with pkgconfig)
+    --with-system-nss         Use system NSS
+    --with-system-webp        Use system libwebp (located with pkgconfig)
+    --with-unsigned-addon-scopes={app,system}
+                              Addon scopes where signature is not required
+    --with-wasm-sandboxed-libraries={graphite,ogg}
+                              Enable wasm sandboxing for the selected libraries
+
+
+Environment variables:
+  Options from ../build/moz.configure/bindgen.configure:
+    BINDGEN_CFLAGS            Options bindgen should pass to the C/C++ parser
+    CBINDGEN                  Path to cbindgen
+    RUSTFMT                   Path to the rustfmt program
+
+  Options from ../build/moz.configure/init.configure:
+    CONFIG_SHELL              Path to a POSIX shell
+    DIST                      DIST directory
+    MOZBUILD_STATE_PATH       Path to a persistent state directory for the build system and related tools
+    MOZCONFIG                 Mozconfig location
+    MOZILLABUILD              Path to Mozilla Build (Windows-only)
+    MOZILLA_OFFICIAL          Build an official release
+    MOZ_AUTOMATION            Enable options for automated builds
+    OLD_CONFIGURE             Path to the old configure script
+    PYTHON3                   Python 3 interpreter (3.5 or later)
+    VIRTUALENV_NAME           Name of the in-objdir virtualenv [init_py3]
+
+  Options from ../build/moz.configure/lto-pgo.configure:
+    LLVM_PROFDATA             Path to the llvm_profdata program
+    MOZ_LD64_KNOWN_GOOD       Indicate that ld64 is free of symbol aliasing bugs.
+
+  Options from ../build/moz.configure/node.configure:
+    NODEJS                    Path to nodejs
+
+  Options from ../build/moz.configure/old.configure:
+    AUTOCONF                  Path to autoconf 2.13
+
+  Options from ../build/moz.configure/pkg.configure:
+    PKG_CONFIG                Path to the pkg_config program
+
+  Options from ../build/moz.configure/rust.configure:
+    CARGO                     Path to the Cargo package manager
+    RUSTC                     Path to the rust compiler
+    RUSTDOC                   Path to the rustdoc program
+
+  Options from ../build/moz.configure/toolchain.configure:
+    AR                        Path to the ar program
+    AS                        Path to the assembler
+    CC                        Path to the target C compiler
+    CCACHE_PREFIX             Compiler prefix to use when using ccache
+    CXX                       Path to the target C++ compiler
+    HOST_CC                   Path to the host C compiler
+    HOST_CXX                  Path to the host C++ compiler
+    HOST_LD                   Deprecated
+    LD                        Deprecated
+    MOZ_DEBUG_FLAGS           Debug compiler flags
+    MOZ_HAZARD                Build for the GC rooting hazard analysis
+    NASM                      Path to the nasm program
+    RUSTC_OPT_LEVEL           Rust compiler optimization level (-C opt-level=%s)
+    RUSTC_WRAPPER             Wrap rust compilation with given tool
+    RUSTFLAGS                 Rust compiler flags
+    SCCACHE_VERBOSE_STATS     Print verbose sccache stats after build
+    YASM                      Path to the yasm program
+
+  Options from ../js/moz.configure:
+    JS_STANDALONE             Reserved for internal use
+
+  Options from ../moz.configure:
+    AWK                       Path to the awk program
+    DSYMUTIL                  Path to the dsymutil program
+    GMAKE                     Path to the gmake program
+    HFS_TOOL                  Path to the hfs_tool program
+    LLVM_OBJDUMP              Path to llvm-objdump
+    MAKE                      Path to GNU make
+    MAKENSISU                 Path to the makensisu program
+    MKFSHFS                   Path to the mkfshfs program
+    MOZ_COPY_PDBS             For builds that do not support symbols in the normal fashion, generate and copy them into the resulting build archive.
+    MOZ_PGO                   Build with profile guided optimizations
+    PERL                      Path to the perl program
+    RPMBUILD                  Path to the rpmbuild program
+    STRIP_FLAGS               Flags for the strip command
+    WATCHMAN                  Path to the watchman program
+    XARGS                     Path to the xargs program
+
+  Options from ../toolkit/moz.configure:
+    GN                        Path to the gn program
+    MIDL_FLAGS                Extra flags to pass to MIDL
+    MOZ_INSTRUMENT_EVENT_LOOP
+                              Force-enable event loop instrumentation
+    MOZ_TELEMETRY_REPORTING   Enable telemetry reporting
+    TAR                       Path to the tar program
+    UNZIP                     Path to the unzip program
+    USE_FC_FREETYPE           Force-enable the use of fontconfig freetype
+    ZIP                       Path to the zip program

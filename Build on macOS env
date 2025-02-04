@@ -16,31 +16,32 @@ pathprepend() {
 
 function do_it()
 {
-    if ! [ -z $1 ]
-    then
-        if [ "$1" = "debug" ]
+        if ! [ -z $1 ]
         then
-            CONF=debug
-        else
-            if [ "$1" = "release" ]
+            if [ "$1" = "debug" ]
             then
-                CONF=release
+                CONF=debug
             else
-                echo Usage : '"Build on macOS" [debug|release]'
-                return 1
+                if [ "$1" = "release" ]
+                then
+                    CONF=release
+                else
+                    echo Usage : '"Build on macOS" [debug|release]'
+                    return 1
+                fi
             fi
+        else
+            CONF=debug
         fi
-    else
-        CONF=debug
-    fi
 
     export OSX_VERSION_MAJOR=$(sw_vers -productVersion | /usr/bin/awk -F. '{print $1}')
     export OSX_VERSION_MINOR=$(sw_vers -productVersion | /usr/bin/awk -F. '{print $2}')
     export OSX_VERSION=$(sw_vers -productVersion | /usr/bin/awk -F. '{print $1 "." $2}')
 
-    export THUNDERBIRD_VERSION=60.5.3
-    export RUST_VERSION=1.84.0
-    export CBINDGEN_VERSION=0.6.7
+    export THUNDERBIRD_VERSION=78.12.0
+    export RUST_VERSION_FOR_CBINDGEN=1.84.0
+    export RUST_VERSION=1.53.0
+    export CBINDGEN_VERSION=0.19.0
     export OFFLINE_DIR="$SCRIPT_DIR/offline"
 
     export HOMEBREW_PREFIX="$SCRIPT_DIR/local_brew"
@@ -53,15 +54,14 @@ function do_it()
     export HOMEBREW_CORE="${HOMEBREW_REPOSITORY}/Library/Taps/homebrew/homebrew-core"
     export HOMEBREW_CASK="${HOMEBREW_REPOSITORY}/Library/Taps/homebrew/homebrew-cask"
     export HOMEBREW_BREW_GIT_REMOTE="https://github.com/Homebrew/brew"
-    export HOMEBREW_BREW_GIT_SHA=1337da0f891aebb85accb094d63e401da1b53cba
+    export HOMEBREW_BREW_GIT_SHA=ac9bdd030ae69d1af0ab98d3801ea04d21b73189 #2021-07-19
     export HOMEBREW_CORE_GIT_REMOTE="https://github.com/Homebrew/homebrew-core"
-    export HOMEBREW_CORE_GIT_SHA=483c06e8c33ff0cfd72d096c6cbd3702816f23da #2021-07-20
-    export HOMEBREW_BACKUP_BASENAME=local_brew_2019-04-04
+    export HOMEBREW_CORE_GIT_SHA=8c3425afc2abb4b1d35883ef72c9b2cdd1bc3ceb #2021-07-20
+    export HOMEBREW_BACKUP_BASENAME=local_brew_2021-07-19
     # if bootles are used, homebrew cache folder contains macos specific bottles
     # In that case, you might consider using $OSX_VERSION in HOMEBREW_CACHE_BACKUP_BASENAME zip
-    export HOMEBREW_CACHE_BACKUP_BASENAME=local_brew_cache_2019-03-15
+    export HOMEBREW_CACHE_BACKUP_BASENAME=local_brew_cache_2021-07-20
 
-    export LLVM_CONFIG="$HOMEBREW_PREFIX"/opt/llvm@7/bin/llvm-config
     export MOZCONFIG="$SCRIPT_DIR"/thunderbird-$THUNDERBIRD_VERSION/mozconfig-$CONF
 
     export RUSTUP_HOME="$SCRIPT_DIR"/local_rust

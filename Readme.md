@@ -1,41 +1,43 @@
-## Thunderbird 60.5.3 build scripts
+## Thunderbird build scripts
 
-These scripts will build Thunderbird, leaving no trace outside the build folder.
+Portable and duplicable build script for building Thunderbird 78.12.0 on macOS.
+Tested on Mojave in January 2025.
 
-Tested on El Capitan and High Sierra. Doesn't work on Mojave and after because of deprecation of stdlibc++.
+### Why:
 
-Jan 2025 : doesn't compile any more because of brew trying to download from now invalid URLs. Maybe fixable, but who want to compile version 60.5.3 in 2025?
+People usually have only one install of brew per computer. This makes it impossible to use different version of a dependency needed for different projects, or different version of the same project.
+Often, if you need to compile on old project (by old, I mean few months!) your brew repository evolved, installed formula has been upgraded and your compilation, that works great few months ago, is broken.
 
-### How to use :
+### How to use.
 
-Clone the repository into any folder of your choice.
+Clone the repository into any folder of your choice. Switch to a branch to choose which version of Thunderbird you'd like to compile.
 
 Launch "./Build on macOS [debug|release]". If the parameter is omitted, debug will be used.
 
-Everything will be downloaded and setup in the chosen folder, including a local installation of brew and a local installation of rust.
+Everything will be downloaded and setup in the chosen folder, including a local installation of brew.
 
+- Local rust is installed in "local_rust"
 - Local brew is installed in "local_brew"
-- Local rust is installed in "local_rustc"
 - MacOS SDK is installed in "MacOSX10.11.sdk"
 - Thunderbird sources are installed in "thunderbird-{version}"
 
-### Offline use
+### Offline use.
 
 All source downloads are stored in an "offline" sub folder.
 
 After a first successful build, the offline folder will contain everything needed to re-run offline.
 
-To restart a compilation from scratch, without any internet access, delete "local_brew", "local_rustc", "MacOSX10.11.sdk" and "thunderbird-{version}" and re-launch "Build on macOS".
+To restart a compilation from scratch, without any internet access, delete "local_brew", "MacOSX10.11.sdk" and "thunderbird-{version}", keep"offline" and re-launch "Build on macOS".
 
-### Modify/Debug the scripts
+### Modify/Debug the scripts.
 
 Issue these commands:
 
 - source "./Build on macOS env"
 
-Then, you can issue commands and copy/paste commands from the scripts. For example, you can use the brew command, you can go into the "thunderbird-60.5.3" sources folder and issue "./mach build", etc.
+Then, you can issue commands and copy/paste commands from the scripts. For example, you can use the brew command, you can go into the thunderbird sources folder and issue "./mach build", etc.
 
-### Modify Thunderbird
+### Modify Thunderbird.
 
 To help modify Thunderbird, you can use the Xcode project located in the dev folder. One target calls the build script "./Build on macOS".
 
@@ -47,10 +49,6 @@ To apply patches from "pacthes.txt", run "dev/apply_patches".
 
 NOTE: Patches are automatically applied when the script "Build on macOS" untars Thunderbird sources.
 
-#### Tests
-
-August 2021 : Successfully compile, either with download or offline, under El Capitan and High Sierra.
-
-### Contact
+### Contact.
 
 Feel free to open an issue, even if it's just for a question.

@@ -1,0 +1,26 @@
+2021-07
+
+  To get the package list, you can run mach bootstrap :
+
+    To get the list of homebrew packages : run ./mach bootstrap once
+    To run ./mach bootstrap, you need :
+      -> mkdir offline
+      download source : 
+        -> (cd offline && curl -f https://archive.mozilla.org/pub/thunderbird/releases/78.12.0/source/thunderbird-78.12.0.source.tar.xz -O )
+      extract source :
+        -> tar -xf offline/thunderbird-78.12.0.source.tar.xz
+      -> ./"Build on macOS install local_brew"
+      -> . ./"Build on macOS env"
+      -> brew install python3
+      get a mozconfig-debug and put it in top directory
+      install python2
+        -> curl https://raw.githubusercontent.com/Homebrew/homebrew-core/86a44a0a552c673a05f11018459c9f5faae3becc/Formula/python@2.rb -O
+        -> brew style --fix python@2.rb
+        -> brew install python@2.rb
+      Disable git html doc in brew formula
+        -> sed -i "" 's| (share/"doc/git-doc").install resource("html")|#(share/"doc/git-doc").install resource("html")|' ./local_brew/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/git.rb
+      -> cd thunderbird-78.12.0
+      -> ./mach bootstrap
+
+  Packages can also be found in thunderbird-78.12.0/python/mozboot/mozboot/osx.py
+

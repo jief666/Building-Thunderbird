@@ -19,81 +19,104 @@ function do_it()
             echo unzipping Homebrew \(unzip -qd "$SCRIPT_DIR" "$OFFLINE_DIR"/$HOMEBREW_BACKUP_BASENAME.zip\)
             unzip -qd "$SCRIPT_DIR" "$OFFLINE_DIR"/$HOMEBREW_BACKUP_BASENAME.zip  ||  return 1
         else
-            (
+        (
 
-                mkdir -p "${HOMEBREW_REPOSITORY}"
-                cd "${HOMEBREW_REPOSITORY}" >/dev/null || return 1
+            mkdir -p "${HOMEBREW_REPOSITORY}"
+            cd "${HOMEBREW_REPOSITORY}" >/dev/null || return 1
 
-                directories=(bin etc include lib sbin share var opt
-                             share/zsh share/zsh/site-functions
-                             var/homebrew var/homebrew/linked
-                             Cellar Caskroom Frameworks)
-                mkdirs=()
-                for dir in "${directories[@]}"; do
-                  if ! [[ -d "${HOMEBREW_PREFIX}/${dir}" ]]; then
-                    mkdir -p "${HOMEBREW_PREFIX}/${dir}"
-                  fi
-                done
-                mkdir -p "$HOMEBREW_LOGS"
-                rm -rf "$HOMEBREW_CACHE" # just in case
+            directories=(bin etc include lib sbin share var opt
+                         share/zsh share/zsh/site-functions
+                         var/homebrew var/homebrew/linked
+                         Cellar Caskroom Frameworks)
+            mkdirs=()
+            for dir in "${directories[@]}"; do
+              if ! [[ -d "${HOMEBREW_PREFIX}/${dir}" ]]; then
+                mkdir -p "${HOMEBREW_PREFIX}/${dir}"
+              fi
+            done
+            mkdir -p "$HOMEBREW_LOGS"
+            rm -rf "$HOMEBREW_CACHE" # just in case
 
 
-                if ! [ -d .git ]
-                then
-                    echo "========>" fetch "${HOMEBREW_BREW_GIT_REMOTE}"
+            if ! [ -d .git ]
+            then
+                echo "========>" fetch "${HOMEBREW_BREW_GIT_REMOTE}"
 
-                    # we do it in four steps to avoid merge errors when reinstalling
-                    "git" "init" "-q" || return 1
-                    # "git remote add" will fail if the remote is defined in the global config
-                    "git" "config" "remote.origin.url" "${HOMEBREW_BREW_GIT_REMOTE}" || return 1
-                    "git" "config" "remote.origin.fetch" "+refs/heads/*:refs/remotes/origin/*" || return 1
-                    # ensure we don't munge line endings on checkout
-                    "git" "config" "core.autocrlf" "false" || return 1
+                # we do it in four steps to avoid merge errors when reinstalling
+                "git" "init" "-q" || return 1
+                # "git remote add" will fail if the remote is defined in the global config
+                "git" "config" "remote.origin.url" "${HOMEBREW_BREW_GIT_REMOTE}" || return 1
+                "git" "config" "remote.origin.fetch" "+refs/heads/*:refs/remotes/origin/*" || return 1
+                # ensure we don't munge line endings on checkout
+                "git" "config" "core.autocrlf" "false" || return 1
 
-                    "git" "fetch" "--depth=1" "origin" $HOMEBREW_BREW_GIT_SHA  || return 1
-                    "git" "checkout" $HOMEBREW_BREW_GIT_SHA  || return 1
-                    git remote remove origin || return 1
-                    ln -sf ../Homebrew/bin/brew "$HOMEBREW_PREFIX/bin/brew"
-                    # gm4 seems forgotten. Got a lot of problem with autoconf@2.13 installation without it
-                    ln -s /usr/bin/m4 "${HOMEBREW_PREFIX}"/Homebrew/Library/Homebrew/shims/mac/super/gm4
-                fi
+                "git" "fetch" "--depth=1" "origin" $HOMEBREW_BREW_GIT_SHA || return 1
+                "git" "checkout" $HOMEBREW_BREW_GIT_SHA || return 1
+                git remote remove origin || return 1
+                ln -sf ../Homebrew/bin/brew "$HOMEBREW_PREFIX/bin/brew"
+            fi
 
 
             if ! [ -d "$HOMEBREW_CORE" ]
             then
-                    (
+            (
                 "/bin/mkdir" "-p" "$HOMEBREW_CORE"
                 cd "$HOMEBREW_CORE" >/dev/null  || return 1
 
-                        echo "========>" fetch "${HOMEBREW_CORE_GIT_REMOTE}"
-                        "git" "init" "-q" || return 1
-                        "git" "config" "remote.origin.url" "${HOMEBREW_CORE_GIT_REMOTE}" || return 1
-                        "git" "config" "remote.origin.fetch" "+refs/heads/*:refs/remotes/origin/*" || return 1
-                        "git" "config" "core.autocrlf" "false" || return 1
-                        "git" "fetch" "--depth=1" "origin" "$HOMEBREW_CORE_GIT_SHA" || return 1
-                        "git" "checkout" "$HOMEBREW_CORE_GIT_SHA" || return 1
-                        git remote remove origin || return 1
-                        # easy access to core formulae. Just for debug, not needed at all
-                        ln -s "$HOMEBREW_CORE"/Formula/ "$HOMEBREW_PREFIX"/formulae-core
-                        # disable test to save some time, but works if you make them
-                        sed -i "" 's/ system "make", "test"/#system "make", "test"/' "${HOMEBREW_CORE}"/Formula/openssl.rb # test doesn't work anymore because of expired certs
-                        #sed -i "" 's/ system "make", "test"/#system "make", "test"/' "${HOMEBREW_CORE}"/Formula/openssl@1.1.rb # test doesn't work anymore because of expired certs
-                        # bug in configure.py, before clang reported "Apple LLVM version", now it's "Apple clang version".
-                        sed -i "" 's|def install|def install\
-    system "sed", "-i", "", "s/Apple [[:alpha:]]* version/Apple \\\\\\\\w* version/", "configure.py"|' "${HOMEBREW_CORE}"/Formula/node.rb
-                        sed -i "" 's|sha256 "7a57ca2b91f7f3c0b168cf5ffbc8a1b2168f3886bcadcc15412281472dace3ce"|sha256 "3457077a530a76ac40d577a336feede839e93bc2e7869bbb663cd20d0a366026"|' "${HOMEBREW_CORE}"/Formula/automake.rb
-                        if [ $OSX_VERSION_MAJOR -eq 10 ] && [ OSX_VERSION_MINOR -gt 13 ]
-                        then
-                            sed -i "" 's| --with-intl=system-icu||' "${HOMEBREW_CORE}"/Formula/node.rb
-                        fi
-                        sed -i "" 's/ depends_on "sphinx-doc" => :build/#depends_on "sphinx-doc" => :build/' "${HOMEBREW_CORE}"/Formula/python@2.rb
-
-                    ) || return 1
+                echo "========>" fetch "${HOMEBREW_CORE_GIT_REMOTE}"
+                "git" "init" "-q" || return 1
+                "git" "config" "remote.origin.url" "${HOMEBREW_CORE_GIT_REMOTE}" || return 1
+                "git" "config" "remote.origin.fetch" "+refs/heads/*:refs/remotes/origin/*" || return 1
+                "git" "config" "core.autocrlf" "false" || return 1
+                "git" "fetch" "--depth=1" "origin" "$HOMEBREW_CORE_GIT_SHA" || return 1
+                "git" "checkout" "$HOMEBREW_CORE_GIT_SHA" || return 1
+                # commit 63b7c799dbce94feb1cb9eec466700d2e0e9f285 is just before folly use llvm. But this commit failed downloading "https://ghcr.io/v2/homebrew/core/node/manifests/15.12.0"
+                #"git" "fetch" "--depth=1" "origin" "63b7c799dbce94feb1cb9eec466700d2e0e9f285" || return 1
+                #"git" "checkout" "63b7c799dbce94feb1cb9eec466700d2e0e9f285" || return 1
+                git remote remove origin || return 1
+                # easy access to core formulae. Just for debug, not needed at all
+                ln -s "$HOMEBREW_CORE"/Formula/ "$HOMEBREW_PREFIX"/formulae-core
+                # doc doesn't build for git
+                sed -i "" 's| (share/"doc/git-doc").install resource("html")|#(share/"doc/git-doc").install resource("html")|' "$HOMEBREW_CORE"/Formula/git.rb || return 1
+                # disable test to save some time, but works if you make them
+                sed -i "" 's/ system "make", "test"/#system "make", "test"/' "$HOMEBREW_CORE"/Formula/openssl@1.1.rb || return 1
+                #curl
+                sed -i.bak 's|args = \["--location", "--remote-time", "--output", destination, \*args\]|args = ["--cacert", "#{HOMEBREW_PREFIX}/etc/ca-certificates/cert.pem", "--location", "--remote-time", "--output", destination, *args]|' "$HOMEBREW_PREFIX"/Homebrew/Library/Homebrew/utils/curl.rb || return 1
+                #ares
+                sed -i.bak 's|url "https://c-ares.haxx.se/download/c-ares-1.17.1.tar.gz"|url "https://github.com/c-ares/c-ares/releases/download/cares-1_17_1/c-ares-1.17.1.tar.gz"|' "$HOMEBREW_PREFIX"/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/c-ares.rb || return 1
+                #had this problem where zlib from macos wasn't found. Seems not happening anymore... I keep this, just in case.
+                #sed -i.bak 's|uses_from_macos "zlib"|depends_on "zlib"|' "$HOMEBREW_PREFIX"/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/nghttp2.rb
+                if [ $OSX_VERSION_MAJOR -ge 13 ]
+                then
+                    if ! grep "MACOSX_DEPLOYMENT_TARGET = 10.13" "$HOMEBREW_PREFIX"/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/terminal-notifier.rb
+                    then
+                        sed -i "" '23i\
+    system "sed", "-i", "", "s|MACOSX_DEPLOYMENT_TARGET = 10.10|MACOSX_DEPLOYMENT_TARGET = 10.13|g", "Terminal Notifier.xcodeproj/project.pbxproj"\
+' "$HOMEBREW_PREFIX"/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/terminal-notifier.rb || return 1
+                    fi
                 fi
+
+                #chage pcre2 url
+                sed -i "" 's|url "https://ftp.pcre.org/pub/pcre/pcre2-10.37.tar.bz2"|url "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.37/pcre2-10.37.tar.bz2"|' "$HOMEBREW_CORE"/Formula/pcre2.rb || return 1
+
+                #disable sphinx-doc because it doesn't build offline
+                sed -i "" 's| \(depends_on "sphinx-doc"\)| #\1|' "$HOMEBREW_CORE"/Formula/libuv.rb || return 1
+                sed -i "" 's| \(system "make", "man"\)| #\1|' "$HOMEBREW_CORE"/Formula/libuv.rb || return 1
+                sed -i "" 's| \(system "make", "singlehtml"\)| #\1|' "$HOMEBREW_CORE"/Formula/libuv.rb || return 1
+                sed -i "" 's| \(man1.install "build/man/libuv.1"\)| #\1|' "$HOMEBREW_CORE"/Formula/libuv.rb || return 1
+                sed -i "" 's| \(doc.install Dir\["build/singlehtml/\*"\]\)| #\1|' "$HOMEBREW_CORE"/Formula/libuv.rb || return 1
+
+                sed -i "" 's| \(depends_on "sphinx-doc"\)| #\1|' "$HOMEBREW_CORE"/Formula/cmake.rb || return 1
+                sed -i "" 's|--sphinx-build=#{Formula\["sphinx-doc"\].opt_bin}/sphinx-build||' "$HOMEBREW_CORE"/Formula/cmake.rb || return 1
+                sed -i "" 's|--sphinx-html||' "$HOMEBREW_CORE"/Formula/cmake.rb || return 1
+                sed -i "" 's|--sphinx-man||' "$HOMEBREW_CORE"/Formula/cmake.rb || return 1
+
+            ) || return 1
+            fi
 
             ( cd "$(dirname "$HOMEBREW_PREFIX")" && zip --symlinks -r "$OFFLINE_DIR"/$HOMEBREW_BACKUP_BASENAME.zip "$(basename "$HOMEBREW_PREFIX")" ) || return 1
 
-            ) || return 1
+        ) || return 1
         fi
 
     fi
