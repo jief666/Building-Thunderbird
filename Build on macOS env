@@ -1,0 +1,91 @@
+#!/bin/bash
+SCRIPT_ABS_FILENAME=`perl -e 'use Cwd "abs_path";print abs_path(shift)' "${BASH_SOURCE[0]:-${(%):-%x}}"`
+SCRIPT_DIR=`dirname "$SCRIPT_ABS_FILENAME"`
+
+pathprepend() {
+  for ((i=$#; i>0; i--)); 
+  do
+    #ARG=$argv[$i] % # works only in bash
+    eval "ARG=\"\${$i}\"" # works with bash AND zsh
+    #echo "ARG=$ARG"
+    if [[ ":$PATH:" != *":$ARG:"* ]]; then
+        export PATH="$ARG${PATH:+":$PATH"}"
+    fi
+  done
+}
+
+function do_it()
+{
+    if ! [ -z $1 ]
+    then
+        if [ "$1" = "debug" ]
+        then
+            CONF=debug
+        else
+            if [ "$1" = "release" ]
+            then
+                CONF=release
+            else
+                echo Usage : '"Build on macOS" [debug|release]'
+                return 1
+            fi
+        fi
+    else
+        CONF=debug
+    fi
+
+    export OSX_VERSION_MAJOR=$(sw_vers -productVersion | /usr/bin/awk -F. '{print $1}')
+    export OSX_VERSION_MINOR=$(sw_vers -productVersion | /usr/bin/awk -F. '{print $2}')
+    export OSX_VERSION=$(sw_vers -productVersion | /usr/bin/awk -F. '{print $1 "." $2}')
+
+    export THUNDERBIRD_VERSION=60.5.3
+    export RUST_VERSION=1.84.0
+    export CBINDGEN_VERSION=0.6.7
+    export OFFLINE_DIR="$SCRIPT_DIR/offline"
+
+    export HOMEBREW_PREFIX="$SCRIPT_DIR/local_brew"
+    export HOMEBREW_CELLAR="$HOMEBREW_PREFIX"/Cellar
+    export HOMEBREW_CACHE="$HOMEBREW_PREFIX"/Cache
+    export HOMEBREW_LOGS="$HOMEBREW_PREFIX"/Logs
+    export HOMEBREW_NO_AUTO_UPDATE=1
+    export HOMEBREW_NO_INSTALL_CLEANUP=1
+    export HOMEBREW_REPOSITORY="${HOMEBREW_PREFIX}/Homebrew"
+    export HOMEBREW_CORE="${HOMEBREW_REPOSITORY}/Library/Taps/homebrew/homebrew-core"
+    export HOMEBREW_CASK="${HOMEBREW_REPOSITORY}/Library/Taps/homebrew/homebrew-cask"
+    export HOMEBREW_BREW_GIT_REMOTE="https://github.com/Homebrew/brew"
+    export HOMEBREW_BREW_GIT_SHA=1337da0f891aebb85accb094d63e401da1b53cba
+    export HOMEBREW_CORE_GIT_REMOTE="https://github.com/Homebrew/homebrew-core"
+    export HOMEBREW_CORE_GIT_SHA=483c06e8c33ff0cfd72d096c6cbd3702816f23da #2021-07-20
+    export HOMEBREW_BACKUP_BASENAME=local_brew_2019-04-04
+    # if bootles are used, homebrew cache folder contains macos specific bottles
+    # In that case, you might consider using $OSX_VERSION in HOMEBREW_CACHE_BACKUP_BASENAME zip
+    export HOMEBREW_CACHE_BACKUP_BASENAME=local_brew_cache_2019-03-15
+
+    export LLVM_CONFIG="$HOMEBREW_PREFIX"/opt/llvm@7/bin/llvm-config
+    export MOZCONFIG="$SCRIPT_DIR"/thunderbird-$THUNDERBIRD_VERSION/mozconfig-$CONF
+
+    export RUSTUP_HOME="$SCRIPT_DIR"/local_rust
+    export CARGO_HOME="$RUSTUP_HOME"
+
+    # Because it's compiled with --target=x86_64-apple-darwin, like the release version, the build system thinks it's a cross compiler.
+    # Fine except it can't find the cross compiling tools like strip.
+    # in obj-thunderbird-release/config.statusd/substs/STRIP, value will be ":"
+    # From log :
+    #   0:10.35 checking for x86_64-apple-darwin-lipo... no
+    #   0:10.35 checking for x86_64-apple-darwin-strip... no
+    #   0:10.35 checking for x86_64-apple-darwin-otool... no
+    #   0:10.35 checking for x86_64-apple-darwin-install_name_tool... no
+    #   0:10.36 checking for x86_64-apple-darwin-objcopy... no
+    # It compiles fine without them. Problem happened in ./mach package when trying to strip. I don't if other tools (lipo, otool, install_name_tool and objcopy) are used.
+
+    export LIPO=lipo
+    export STRIP=strip
+    export OTOOL=otool
+    export INSTALL_NAME_TOOL=install_name_tool
+    export OBJCOPY=objcopy
+
+    pathprepend "$HOMEBREW_PREFIX"/bin
+    pathprepend "$RUSTUP_HOME"/bin
+}
+
+do_it "$@"

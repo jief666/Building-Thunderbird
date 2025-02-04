@@ -1,0 +1,38 @@
+#!/bin/bash
+APPLY_PATCHES_SCRIPT_ABS_FILENAME=`perl -e 'use Cwd "abs_path";print abs_path(shift)' "${BASH_SOURCE[0]:-${(%):-%x}}"`
+APPLY_PATCHES_SCRIPT_DIR=`dirname "$APPLY_PATCHES_SCRIPT_ABS_FILENAME"`
+#to copy/paste cmds in terminal (for debug purpose?), do this before : APPLY_PATCHES_SCRIPT_DIR=$(pwd)
+
+function do_it()
+{
+
+    cd "$APPLY_PATCHES_SCRIPT_DIR"/.. # that way, we're in the same cwd as "Build On MacOS..." scripts
+
+    . ./"Build on macOS env"
+
+    if ! [ -f "$APPLY_PATCHES_SCRIPT_DIR"/patches.txt ]
+    then
+        echo no patches.txt to apply
+        return 1
+    fi
+
+    if ! [ -d ./thunderbird-"$THUNDERBIRD_VERSION" ]
+    then
+        echo no thunderbird sources in which to apply patches
+        return 1
+    fi
+
+    cd ./thunderbird-$THUNDERBIRD_VERSION || return 1
+
+    patch -p1 -f -r - --dry-run < "$APPLY_PATCHES_SCRIPT_DIR"/patches.txt
+    patch_ret=$?
+    if ! [ $patch_ret -eq 0 ]
+    then
+        echo Problem at patching. Pacthing not done at all. Maybe it\'s already patched.
+        return 1
+    fi
+    patch -p1 < "$APPLY_PATCHES_SCRIPT_DIR"/patches.txt
+
+}
+
+do_it "$@"

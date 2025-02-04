@@ -1,1 +1,9 @@
 /.project
+/local_brew/
+/local_rustc/
+/offline.zip
+/offline/
+/MacOSX10.11.sdk/
+/thunderbird-60.5.3/
+/thunderbird_profile
+/tmp

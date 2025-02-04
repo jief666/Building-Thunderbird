@@ -1,0 +1,372 @@
+#!/bin/bash
+SCRIPT_ABS_FILENAME=`perl -e 'use Cwd "abs_path";print abs_path(shift)' "${BASH_SOURCE[0]:-${(%):-%x}}"`
+SCRIPT_DIR=`dirname "$SCRIPT_ABS_FILENAME"`
+#to copy/paste cmds in terminal (for debug purpose?), do this before : SCRIPT_DIR=$(pwd)
+
+#echo SCRIPT_DIR=$SCRIPT_DIR
+
+#This script can be sourced, so you'll keep env vars and you'll be able to launch compilation by using ./mach run
+
+#2019-03
+#  Tested on El Capitan version : 10.11.6 (15G22010)
+#  Tested on High Sierra 10.13.6 (17G5019)
+
+#llvm@7 needs a full Xcode installation, not just command line tools
+
+set -o pipefail
+
+# brew install --build-from-source doesn't apply to dependencies.
+# So we have to install them one by one.
+
+install_opts="--build-from-source -d -v"
+function brew_install()
+{
+    echo '===============>' brew_install check installation of $1
+    local dependency
+    for dependency in $(brew deps --include-build -n "$1") # All dependencies are listed, including dependencies of dependencies
+    do
+        if ! [ -d "$HOMEBREW_CELLAR"/"$(basename "$dependency")" ]
+        then
+            echo '===============>' brew install $1 dependency \: $dependency
+            brew install $install_opts $dependency  ||  return 1
+        fi
+    done
+    if ! [ -d "$HOMEBREW_CELLAR"/"$(basename "$1")" ]
+    then
+        echo '===============>' brew install -d -v $1
+        brew install $install_opts $1  ||  return 1
+    fi
+}
+
+function brew_fetch()
+{
+    echo '===============>' brew_fetch $1
+        local dependency
+    for dependency in $(brew deps --include-build -n "$1")
+    do
+        echo '===============>' $1 dependency $dependency
+        brew fetch $install_opts $dependency  ||  return 1
+    done
+    brew fetch $install_opts $1  ||  return 1
+}
+
+#Everything in put in a function so return will work even if this script is not sourced
+function do_it()
+{
+    cd "$SCRIPT_DIR"
+
+  #Setup env
+    source "./Build on macOS env"
+    #echo PATH=$PATH
+
+    if [ $OSX_VERSION_MAJOR -gt 10 ]
+    then
+        echo So far, compilation failed on Mojave and newer macOs version because of deprecation of stdlibc++
+        return 1
+    fi
+    if [ $OSX_VERSION_MINOR -ge 14 ]
+    then
+        echo So far, compilation failed on Mojave and newer macOs version because of deprecation of stdlibc++
+        return 1
+    fi
+
+    if ! [ -z $1 ]
+    then
+        if [ "$1" = "debug" ]
+        then
+            CONF=debug
+        else
+            if [ "$1" = "release" ]
+            then
+                CONF=release
+            else
+                echo Usage : '"Build on macOS" [debug|release]'
+                return 1
+            fi
+        fi
+    else
+        CONF=debug
+    fi
+
+#TODO before : Install Xcode in default location (/Applications). Run Xcode to agree license and finish setup.
+    if ! [ -d /Applications/Xcode.app ]
+    then
+        echo Install Xcode in default location \(/Applications\). Don\'t forget to run Xcode once to agree license and finish setup.
+        return 1
+    fi
+
+#Select Xcode tools (looks like installing the above packages re-select it anyway, but just in case) :
+    if ! [ $(xcode-select -p) = "/Applications/Xcode.app/Contents/Developer" ]
+    then
+        echo Setting command line tools to /Applications/Xcode.app/Contents/Developer. You might need to enter the root password
+        sudo xcode-select -s /Applications/Xcode.app/Contents/Developer || return 1
+    fi
+
+#Check if Xcode was launched at least once
+    if ! xcodebuild -checkFirstLaunchStatus
+    then
+        echo run Xcode once to agree license and finish setup
+        return 1
+    fi
+
+#Check that command line tools are installed
+    if ! [ -f /Library/Developer/CommandLineTools/usr/bin/clang ]
+    then
+        sudo xcode-select --install
+        echo restart this script when command line are installed
+        return 2
+    fi
+
+#offline dir
+    if ! [ -d "$OFFLINE_DIR" ]
+    then
+        mkdir "$OFFLINE_DIR"  ||  return 1
+    fi
+
+#Install rustc
+    if ! [ -d "$RUSTUP_HOME" ]
+    then
+        if ! [ -d ./tmp/rust-$RUST_VERSION-x86_64-apple-darwin ]
+        then
+            if ! [ -f "$OFFLINE_DIR"/rust-$RUST_VERSION-x86_64-apple-darwin.tar.gz ]
+            then
+                curl -f https://static.rust-lang.org/dist/rust-$RUST_VERSION-x86_64-apple-darwin.tar.gz -o "$OFFLINE_DIR"/rust-$RUST_VERSION-x86_64-apple-darwin.tar.gz.downloading   ||  return 1
+                mv "$OFFLINE_DIR"/rust-$RUST_VERSION-x86_64-apple-darwin.tar.gz.downloading "$OFFLINE_DIR"/rust-$RUST_VERSION-x86_64-apple-darwin.tar.gz  ||  return 1
+            fi
+            mkdir -p ./tmp
+            rm -rf ./tmp/rust-$RUST_VERSION-x86_64-apple-darwin.untar
+            mkdir ./tmp/rust-$RUST_VERSION-x86_64-apple-darwin.untar  ||  return 1
+            tar zxf "$OFFLINE_DIR"/rust-$RUST_VERSION-x86_64-apple-darwin.tar.gz --strip-components 1 -C ./tmp/rust-$RUST_VERSION-x86_64-apple-darwin.untar   ||  return 1
+            mv ./tmp/rust-$RUST_VERSION-x86_64-apple-darwin.untar ./tmp/rust-$RUST_VERSION-x86_64-apple-darwin  ||  return 1
+        fi
+        ./tmp/rust-$RUST_VERSION-x86_64-apple-darwin/install.sh --destdir="$RUSTUP_HOME" --prefix=""  ||  return 1
+        rm -rf ./tmp/rust-$RUST_VERSION-x86_64-apple-darwin
+        [[ -z "$(ls -A "./tmp")" ]] && rmdir ./tmp
+    fi
+
+    if ! [ -f "$RUSTUP_HOME"/bin/cbindgen ]
+    then
+        if ! [ -f "$OFFLINE_DIR"/cbindgen-$CBINDGEN_VERSION ]
+        then
+                    cargo install --version $CBINDGEN_VERSION cbindgen  ||  return 1
+            cp "$RUSTUP_HOME"/bin/cbindgen "$OFFLINE_DIR"/cbindgen-$CBINDGEN_VERSION 
+        else
+            cp "$OFFLINE_DIR"/cbindgen-$CBINDGEN_VERSION "$RUSTUP_HOME"/bin/cbindgen
+        fi
+    fi
+
+    rm -rf "$RUSTUP_HOME"/registry # not needed anymore... at least not for Thunderbird.
+
+
+#Install brew :
+
+    ./"Build on macOS install local_brew" || return 1
+
+#Install packages : autoconf@2.13 node watchman gnu-tar llvm@7 terminal-notifier nasm yasm python@2
+
+    rm -rf "$HOMEBREW_CACHE"/downloads/*.incomplete # I had some errors when trying to restart an incomplete download
+
+    [ $(ls -1q "$HOMEBREW_CACHE"/"autoconf@2.13"* | wc -l) -ge 1 ] || brew_fetch autoconf@2.13  ||  return 1
+    [ $(ls -1q "$HOMEBREW_CACHE"/node* | wc -l) -ge 2 ] || brew_fetch node  ||  return 1
+    [ $(ls -1q "$HOMEBREW_CACHE"/watchman* | wc -l) -ge 1 ] || brew_fetch watchman  ||  return 1
+    [ $(ls -1q "$HOMEBREW_CACHE"/gnu-tar* | wc -l) -ge 1 ] || brew_fetch gnu-tar  ||  return 1
+    [ $(ls -1q "$HOMEBREW_CACHE"/llvm* | wc -l) -ge 9 ] || brew_fetch llvm@7  ||  return 1
+    [ $(ls -1q "$HOMEBREW_CACHE"/terminal-notifier* | wc -l) -ge 1 ] || brew_fetch terminal-notifier  ||  return 1
+    [ $(ls -1q "$HOMEBREW_CACHE"/nasm* | wc -l) -ge 1 ] || brew_fetch nasm  ||  return 1
+    [ $(ls -1q "$HOMEBREW_CACHE"/yasm* | wc -l) -ge 1 ] || brew_fetch yasm  ||  return 1
+    [ $(ls -1q "$HOMEBREW_CACHE"/'python@2'* | wc -l) -ge 4 ] || brew_fetch python@2  ||  return 1
+
+    if ! [ -f "$OFFLINE_DIR"/$HOMEBREW_CACHE_BACKUP_BASENAME.zip ]
+    then
+        ( cd "$(dirname "$HOMEBREW_CACHE")" && zip --symlinks -r "$SCRIPT_DIR"/offline/$HOMEBREW_CACHE_BACKUP_BASENAME.zip "$(basename "$HOMEBREW_CACHE")" ) || return 1
+    fi
+
+    if ! [ -d "$HOMEBREW_PREFIX"/Cellar/autoconf@2.13 ]; then
+        brew_install autoconf@2.13  ||  return 1
+        #if a path to a library contains "$SCRIPT_DIR/local_brew" instead of "/usr/local", m4 fails with "gm4: expecting line feed in frozen file"
+        #looks like I don't need that anymore, I don't know why.
+        #sed -i "" "s|$HOMEBREW_PREFIX|/usr/local|" "$HOMEBREW_PREFIX"/Cellar/autoconf@2.13/2.13/share/autoconf@2.13/autoconf/autoconf.m4f
+    fi
+
+    if ! [ -d "$HOMEBREW_PREFIX"/Cellar/node ]; then
+        brew_install node  ||  return 1
+    fi
+    if ! [ -d "$HOMEBREW_PREFIX"/Cellar/watchman ]; then
+        brew_install watchman  ||  return 1
+    fi
+    if ! [ -d "$HOMEBREW_PREFIX"/Cellar/gnu-tar ]; then
+        brew_install gnu-tar  ||  return 1
+    fi
+    if ! [ -d "$HOMEBREW_PREFIX"/Cellar/llvm/7.0.1 ]; then
+        brew_install llvm@7  ||  return 1
+    fi
+    if ! [ -d "$HOMEBREW_PREFIX"/Cellar/terminal-notifier  ]; then
+        brew_install terminal-notifier  ||  return 1
+    fi
+    if ! [ -d "$HOMEBREW_PREFIX"/Cellar/nasm ]; then
+        brew_install nasm  ||  return 1
+    fi
+    if ! [ -d "$HOMEBREW_PREFIX"/Cellar/yasm ]; then
+        brew_install yasm  ||  return 1
+    fi
+    if ! [ -d "$HOMEBREW_PREFIX"/Cellar/python@2 ]; then
+        brew_install python@2  ||  return 1
+    fi
+
+    # A popup might appear : "To use the 'java' command-line tool you need to install a JDK" will appear. No need for java. 2021-07 : not anymore
+
+#Checks
+
+    if ! [ -f "$($LLVM_CONFIG --bindir)"/clang ]
+    then
+        echo clang v7 not found in \'"$($LLVM_CONFIG --bindir)"\'. Did \"brew install llvm@7\" work ?
+        return 1
+    fi
+
+    if which -s rustc
+    then
+        if ! [ $(which rustc) = "$RUSTUP_HOME"/bin/rustc ]
+        then
+            echo rustc found in \'$(which rustc)\' instead of \'"$RUSTUP_HOME"/bin\'. Not sure if it\'s right or wrong. Disable current rustc and restart, or comment out next line.
+            return 1
+        fi
+    else
+        echo rustc not found. Did \"curl https://sh.rustup.rs -sSf \| bash -s -- -y --no-modify-path\" work ?
+        return 1
+    fi
+
+#El Capitan SDK
+    if ! [ -d ./MacOSX10.11.sdk ]
+    then
+        if ! [ -f "$OFFLINE_DIR"/MacOSX10.11.sdk.tar.xz ]
+        then
+            rm -rf "$OFFLINE_DIR"/MacOSX10.11.sdk.tar.xz.downloading
+	        curl -fL https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/MacOSX10.11.sdk.tar.xz -o "$OFFLINE_DIR"/MacOSX10.11.sdk.tar.xz.downloading  ||  return 1
+            mv "$OFFLINE_DIR"/MacOSX10.11.sdk.tar.xz.downloading "$OFFLINE_DIR"/MacOSX10.11.sdk.tar.xz  ||  return 1
+        fi
+        rm -rf ./MacOSX10.11.sdk.untar
+        mkdir ./MacOSX10.11.sdk.untar  ||  return 1
+        tar xzf "$OFFLINE_DIR"/MacOSX10.11.sdk.tar.xz --strip-components 1 -C ./MacOSX10.11.sdk.untar  ||  return 1
+        mv ./MacOSX10.11.sdk.untar ./MacOSX10.11.sdk  ||  return 1
+    fi
+
+
+#  ThunderBird source
+    if ! [ -d ./thunderbird-$THUNDERBIRD_VERSION ]
+    then
+        if ! [ -f "$OFFLINE_DIR"/thunderbird-$THUNDERBIRD_VERSION.source.tar.xz ]
+        then
+	        curl -f https://archive.mozilla.org/pub/thunderbird/releases/$THUNDERBIRD_VERSION/source/thunderbird-$THUNDERBIRD_VERSION.source.tar.xz -o "$OFFLINE_DIR"/thunderbird-$THUNDERBIRD_VERSION.source.tar.xz.downloading  ||  return 1
+            mv "$OFFLINE_DIR"/thunderbird-$THUNDERBIRD_VERSION.source.tar.xz.downloading "$OFFLINE_DIR"/thunderbird-$THUNDERBIRD_VERSION.source.tar.xz  ||  return 1
+        fi
+        rm -rf ./thunderbird-$THUNDERBIRD_VERSION.untar
+        mkdir ./thunderbird-$THUNDERBIRD_VERSION.untar  ||  return 1
+        tar xzf "$OFFLINE_DIR"/thunderbird-$THUNDERBIRD_VERSION.source.tar.xz --strip-components 1 -C ./thunderbird-$THUNDERBIRD_VERSION.untar  ||  return 1
+        mv ./thunderbird-$THUNDERBIRD_VERSION.untar ./thunderbird-$THUNDERBIRD_VERSION
+        if [ -x ./dev/apply_patches ]
+        then
+            ./dev/apply_patches
+        fi
+        sed -i "" 's|#!\[deny(unsafe_code, missing_docs)\]||' ./thunderbird-$THUNDERBIRD_VERSION/servo/components/style_traits/lib.rs
+        sed -i "" 's|#!\[deny(missing_docs)\]||' ./thunderbird-$THUNDERBIRD_VERSION/servo/components/style/lib.rs
+        if [ $OSX_VERSION_MAJOR -eq 10 ] && [ $OSX_VERSION_MINOR -ge 14 ]
+        then
+            # Compilation on Mojave generates warnings about inline. But complation on Mojave fails later anyway.
+            sed -i "" 's|#define MOZ_ALWAYS_INLINE_EVEN_DEBUG.*$|#define MOZ_ALWAYS_INLINE_EVEN_DEBUG|g' ./thunderbird-$THUNDERBIRD_VERSION/mfbt/Attributes.h
+        fi
+
+patch1='--- a/mail/installer/package-manifest.in
++++ b/mail/installer/package-manifest.in
+@@ -35,17 +35,19 @@
+ #ifndef XP_MACOSX
+ #define UNIX_BUT_NOT_MAC
+ #endif
+ #endif
+ 
+ #ifdef XP_MACOSX
+ ; Mac bundle stuff
+ @APPNAME@/Contents/Info.plist
++#ifdef MOZ_UPDATER
+ @APPNAME@/Contents/Library/LaunchServices
++#endif
+ @APPNAME@/Contents/PkgInfo
+ @APPNAME@/Contents/Library/Spotlight/thunderbird.mdimporter/
+ @RESPATH@/thunderbird.icns
+ @RESPATH@/@LPROJ_ROOT@.lproj/*
+ #endif
+ 
+ [@AB_CD@]
+ @RESPATH@/@PREF_DIR@/all-l10n.js
+'
+        patch -p0 ./thunderbird-$THUNDERBIRD_VERSION/comm/mail/installer/package-manifest.in <<< "$patch1"  || return 1
+    fi
+
+    cd ./thunderbird-$THUNDERBIRD_VERSION  ||  return 1
+
+#  Mozconfig. Do not regenerate if already exist because it forces some recompilation and takes way more time.
+    local mozconfig_var
+    mozconfig_var="$mozconfig_var"'mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/obj-thunderbird-'"$CONF"$'\n'
+        if [ "$CONF" = debug ]
+        then
+        mozconfig_var="$mozconfig_var"'mk_add_options MOZ_MAKE_FLAGS="-j1"'$'\n'
+
+        mozconfig_var="$mozconfig_var"'ac_add_options --enable-application=comm/mail'$'\n'
+        #mozconfig_var="$mozconfig_var"'ac_add_options --target=x86_64-apple-darwin'$'\n'
+        mozconfig_var="$mozconfig_var"'ac_add_options --disable-updater'$'\n'
+        #mozconfig_var="$mozconfig_var"'ac_add_options --enable-clang-plugin'$'\n' # doesn't work (configure: error: Cannot find an llvm-config binary for building a clang plugin), but official builds have it. TODO
+        mozconfig_var="$mozconfig_var"'ac_add_options --enable-js-shell'$'\n'
+        mozconfig_var="$mozconfig_var"'ac_add_options --enable-rust-simd'$'\n' # doesn't work, but official builds have it. TODO
+        mozconfig_var="$mozconfig_var"'ac_add_options --disable-crashreporter'$'\n' # Cannot run in Xcode if crashreporter is enabled.
+        mozconfig_var="$mozconfig_var"'ac_add_options --enable-debug'$'\n'
+        mozconfig_var="$mozconfig_var"'ac_add_options --enable-debug-symbols'$'\n'
+        mozconfig_var="$mozconfig_var"'ac_add_options --disable-optimize'$'\n'
+        else
+        mozconfig_var="$mozconfig_var"'mk_add_options MOZ_MAKE_FLAGS="-j5"'$'\n'
+
+        mozconfig_var="$mozconfig_var"'ac_add_options --enable-application=comm/mail'$'\n'
+        mozconfig_var="$mozconfig_var"'ac_add_options --target=x86_64-apple-darwin'$'\n'
+        mozconfig_var="$mozconfig_var"'ac_add_options --disable-updater'$'\n'
+        #mozconfig_var="$mozconfig_var"'ac_add_options --enable-clang-plugin'$'\n' # doesn't work (configure: error: Cannot find an llvm-config binary for building a clang plugin), but official builds have it. TODO
+        mozconfig_var="$mozconfig_var"'ac_add_options --enable-js-shell'$'\n'
+        mozconfig_var="$mozconfig_var"'ac_add_options --enable-rust-simd'$'\n' # doesn't work, but official builds have it. TODO
+        mozconfig_var="$mozconfig_var"'ac_add_options --disable-crashreporter'$'\n' # Cannot run in Xcode if crashreporter is enabled.
+        mozconfig_var="$mozconfig_var"'ac_add_options --enable-official-branding'$'\n'  # doesn't work with thunderbird 78.12.0. Branding problem...
+        fi
+    mozconfig_var="$mozconfig_var"'ac_add_options --disable-tests'$'\n'
+    mozconfig_var="$mozconfig_var""ac_add_options --with-macos-sdk="$SCRIPT_DIR"/MacOSX10.11.sdk"$'\n'
+
+        mozconfig_var="$mozconfig_var"'ac_add_options --enable-calendar'$'\n'
+        
+        if [ $OSX_VERSION_MAJOR -eq 10 ] && [ OSX_VERSION_MINOR -gt 13 ]
+        then
+            mozconfig_var="$mozconfig_var"'mk_add_options CXXFLAGS="-stdlib=libc++"'$'\n'
+        fi
+
+    current_mozconfig="$(< "$MOZCONFIG")"
+    current_mozconfig="$current_mozconfig"$'\n' # command substitution remove trailing newline. Add it back
+
+    if [[ "$mozconfig_var" != $current_mozconfig ]]; then
+        echo update "$MOZCONFIG" file
+        printf "$mozconfig_var" > "$MOZCONFIG"
+    fi
+
+#  Build
+    ./mach build  ||  return 1
+    ./mach package  ||  return 1
+
+}
+
+do_it "$@"
+
+#Infos :
+#  source : https://archive.mozilla.org/pub/thunderbird/releases/$THUNDERBIRD_VERSION/source/
+#  mercurial bundles : https://hg.cdn.mozilla.net/
+
+#  see https://developer.mozilla.org/en-US/docs/Mozilla/Developer_guide/Build_Instructions/Mac_OS_X_Prerequisites
+#  see https://developer.mozilla.org/en-US/docs/Mozilla/Developer_guide/Build_Instructions/Simple_Thunderbird_build
+
+#if error at
+# "Collecting six>=1.10.0 (from manifestparser==1.2)"
+# 1) It's because python 2 version is wrong
+# 2) I also had problem because with blocked outbound internet trafic (little snitch, hands off!). Give a strange error and manual install works. Check denied connection.
+

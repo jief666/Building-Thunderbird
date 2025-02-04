@@ -1,0 +1,7 @@
+#!/bin/bash
+SCRIPT_ABS_FILENAME=`perl -e 'use Cwd "abs_path";print abs_path(shift)' "${BASH_SOURCE[0]:-${(%):-%x}}"`
+SCRIPT_DIR=`dirname "$SCRIPT_ABS_FILENAME"`
+
+cd "$SCRIPT_DIR"
+
+./thunderbird-60.5.3/obj-thunderbird-debug/dist/Thunderbird*.app/Contents/MacOS/thunderbird -profile ./thunderbird_profile
